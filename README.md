@@ -1,6 +1,8 @@
 # douyin_live_status
 Get the information and status of the Douyin live room through the Douyin web page
+
 通过抖音网页版获取抖音直播间状态
+抖音直播推送
 
 首先引入Douyin库(目录下)
 import Douyin
