@@ -48,7 +48,7 @@ def query_live_status(user_account=None,is_target=False):
                 a+=1
                 if(user_account in str(i.string)):
                     where.append(a-1)
-            result = json.loads(str(str(str(scripts[where[len(where)-1]].string).split("]\\n\"])")[0]).split("self.__pace_f.push([1,\"a:[\\\"$\\\",\\\"$L11\\\",null,")[1]).replace("\\\"","\"").replace("\\\\","\\"))
+            result = json.loads(str(str(str(scripts[where[len(where)-1]].string).split("]\\n\"])")[0]).split("self.__pace_f.push([1,\"a:[\\\"$\\\",\\\"$L10\\\",null,")[1]).replace("\\\"","\"").replace("\\\\","\\"))
         except Exception as e:
             print("错误1触发",str(e))
             return(None,None,0,None,None,None,None)
