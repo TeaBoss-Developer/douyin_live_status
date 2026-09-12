@@ -89,3 +89,15 @@ Douyin.heartbeat(config_dict)   # 直接传 dict
 ## 免责声明
 
 本程序仅用于学习和交流，一切有关抖音的商业用途与开发者无关。
+
+## 系列说明
+
+本仓库是「抖音解析系列」的成员之一，三件套共用同一套异步 API + 配置化 + 健壮解析模式：
+
+| 仓库 | 用途 |
+| --- | --- |
+| [douyin_live_status](https://github.com/TeaBoss-Developer/douyin_live_status) | 直播间状态查询 + 开播推送（本仓库） |
+| [douyin_vedio_info](https://github.com/TeaBoss-Developer/douyin_vedio_info) | 视频无水印直链解析 |
+| [douyin_image_info](https://github.com/TeaBoss-Developer/douyin_image_info) | 图集（图文帖）无水印原图解析 |
+
+各仓库均需配置 `config.json` 中的有效 Cookie（抖音风控会拦截未登录请求），Cookie 已被 .gitignore 排除，不会提交到仓库。
