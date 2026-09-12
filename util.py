@@ -59,27 +59,27 @@ def get_random_useragent():
     return random.choice(USER_AGENTS)
 
 
-def requests_get(url, module_name='未指定', headers=None, params=None, use_proxy=False):
+def requests_get(url, module_name='未指定', headers=None, params=None, use_proxy=False, timeout=10):
     if headers is None:
         headers = {}
     headers = dict({
         'User-Agent': get_random_useragent()
     }, **headers)
     try:
-        response = requests.get(url, headers=headers, params=params, timeout=10)
+        response = requests.get(url, headers=headers, params=params, timeout=timeout)
     except Exception as e:
         return None
     return response
 
 
-def requests_post(url, module_name='未指定', headers=None, params=None, data=None, json=None, use_proxy=False):
+def requests_post(url, module_name='未指定', headers=None, params=None, data=None, json=None, use_proxy=False, timeout=10):
     if headers is None:
         headers = {}
     headers = dict({
         'User-Agent': get_random_useragent()
     }, **headers)
     try:
-        response = requests.post(url, headers=headers, params=params, data=data, json=json, timeout=10)
+        response = requests.post(url, headers=headers, params=params, data=data, json=json, timeout=timeout)
     except Exception as e:
         return None
     return response

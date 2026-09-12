@@ -1,0 +1,9 @@
+{
+  "accounts": ["J1an9u9u"],
+  "heartbeat_interval": 10,
+  "push_api": {
+    "send_msg": "http://127.0.0.1:451/send_msg",
+    "change_groupname": "http://127.0.0.1:451/change_groupname",
+    "group_id": "000000000"
+  }
+}

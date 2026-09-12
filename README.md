@@ -1,46 +1,91 @@
 # douyin_live_status
-Get the information and status of the Douyin live room through the Douyin web page
 
-通过抖音网页版获取抖音直播间状态
-抖音直播推送
+通过抖音网页版获取抖音直播间状态 + 开播推送（配置化 + 健壮解析版）
 
-首先引入Douyin库(目录下)
+> 原版发布于 2023-09，硬编码 `self.__pace_f.push` 的 `$L10` chunk 前缀。
+> 抖音页面改版后该写法已失效（`list index out of range`）。
+> 本版改为遍历全部 RSC flight chunk 递归定位 `roomInfo`，chunk 编号变化也能工作。
+
+## 安装依赖
+
+```bash
+pip install requests beautifulsoup4
+```
+
+## 快速使用
+
+```bash
+python Main.py                 # 默认查询 J1an9u9u
+python Main.py 主播抖音号      # 查询指定主播
+```
+
+或作为库引入：
+
+```python
 import Douyin
-在Douyin库下有几个有用的函数
-def query_live_status
 
-def clear
+# 返回 dict
+Douyin.query_live_status("J1an9u9u", is_target=False)
 
-def heartbeat
+# 返回 Python 对象（元组，兼容旧版心跳）
+Douyin.query_live_status("J1an9u9u", is_target=True)
+```
 
-query_live_status使用方法:
-Douyin.query_live_status("主播抖音号"[str],是否为Python对象[bool])
-例:
-Douyin.query_live_status("J1an9u9u",True)#返回Python对象
+返回 dict 字段：
 
-('[J1an9u9u]缄啾啾', '少萝', 2, '338在线观众\n最大人数记录:1万+观众\n点赞数:18588', '{竞技游戏}[第五人格]', 'https://p6-webcast-sign.douyinpic.com/image-cut-tos-priv/d918975991c0445276308bb2dd43a7bf~tplv-qz53dukwul-common-resize:0:0.image?biz_tag=10&classify=10&from=webcast.room.pack&scene_tag=enter_room&x-expires=1698639788&x-signature=8meIPjzJk0ZQxC3%2F8tKznBOYiCo%3D', 'https://live.douyin.com/J1an9u9u\n(qr_url:https://p3-pc.douyinpic.com/img/aweme-qrcode/wBMLzF7284447748588341004~c5_720x720.webp?from=746027608)\n最佳视频推送流:http://pull-flv-l11.douyincdn.com/third/stream-7284447477145635584_hd5.flv?expire=1696652588&sign=92e97a376cf01ced0f62a19a71c9abb3')
+| 字段 | 说明 |
+| --- | --- |
+| name | 主播昵称 |
+| room_title | 直播间标题 |
+| status | 2=直播中，4=未开播，0=未知 |
+| room_view_stats | 在线人数显示文本 |
+| position | 分区，如 `{竞技游戏}[第五人格]` |
+| logo_url | 主播头像 / 封面 |
+| url | 直播间链接 |
+| view_total | 总观看人数文本 |
+| like_count | 点赞数 |
+| qr_url | 直播间二维码 |
+| live_steam_url | FLV 拉流地址（直播中才有） |
 
-Douyin.query_live_status("J1an9u9u",False)#返回json对象
+## 配置文件 config.json
 
-{'name': '[J1an9u9u]缄啾啾', 'room_title': '少萝', 'status': 2, 'room_view_stats': '337在线观众', 'position': '{竞技游戏}[第五人格]', 'logo_url': 'https://p6-webcast-sign.douyinpic.com/image-cut-tos-priv/d918975991c0445276308bb2dd43a7bf~tplv-qz53dukwul-common-resize:0:0.image?biz_tag=10&classify=10&from=webcast.room.pack&scene_tag=enter_room&x-expires=1698639789&x-signature=oJtE73PT5DisLExhvmdj4SjSsfU%3D', 'url': 'https://live.douyin.com/J1an9u9u', 'view_total': '1万+观众', 'like_count': 18588, 'qr_url': 'https://p3-pc.douyinpic.com/img/aweme-qrcode/wBMLzF7284447748588341004~c5_720x720.webp?from=746027608', 'live_steam_url': 'http://pull-flv-l11.douyincdn.com/third/stream-7284447477145635584_hd5.flv?expire=1696652589&sign=01616d258885ac3f8a16c654dff11982'}
+```json
+{
+  "accounts": ["J1an9u9u"],
+  "heartbeat_interval": 10,
+  "push_api": {
+    "send_msg": "http://127.0.0.1:451/send_msg",
+    "change_groupname": "http://127.0.0.1:451/change_groupname",
+    "group_id": "000000000"
+  }
+}
+```
 
-clear使用方法:
-ps:这个是用来在Windows以及Linux清屏的指令
+- `accounts`：要监听的主播抖音号列表
+- `heartbeat_interval`：心跳间隔（秒）
+- `push_api`：开播推送接口（原为自写 QQ 机器人 API，可改成 onebot 标准接口）
 
-例:clear()
+## 开播推送
 
-heartbeat介绍及使用方法:
-这个本来是我用来机器人推送直播的函数
-他继承了@async_fun
-所以直接单独线程进行检测和推送
-10s一次心跳
-http://127.0.0.1:451/send_msg    #发送群消息
-http://127.0.0.1:451/change_groupname     #更改群名称
-这俩API是我自写的,可以改成onebot标准的那种的API.
-基本上没有误报和漏报
+```python
+import Douyin
+Douyin.heartbeat()              # 读取 config.json，独立线程运行
+Douyin.heartbeat("config.json") # 指定配置文件
+Douyin.heartbeat(config_dict)   # 直接传 dict
+```
 
-PS:Douyin.py的第五十一行
-self.__pace_f.push([1,\"a:[\\\"$\\\",\\\"$L11\\\",null,
-这个$L11可能会变,后期检测变了会更新.
+监听逻辑：
+- 每 `heartbeat_interval` 秒查询一次
+- `status=2`（直播中）且未推送过 → 发送开播通知 + 改群名"推送姬-主播正在播呢"
+- `status=4`（未开播）→ 复位推送标记，改群名"推送姬-主播已下播"
 
-使用须知:本程序仅用于学习和交流,一切有关douyin的商业用途,与开发者无关.
+## 健壮性说明
+
+- 解析不再依赖具体 chunk 编号（`$L10`/`$L11`/`$L12`），遍历全部 `self.__pace_f.push` 数据
+- 字段全部 `.get()` 容错，缺字段不崩溃
+- 请求失败 / 解析失败返回 `None` 并记日志，不抛裸异常
+- 拉流地址不再硬编码 `HD1`，按 `HD1 → FULL_HD1 → SD1 → SD2 → 任意` 顺序取
+
+## 免责声明
+
+本程序仅用于学习和交流，一切有关抖音的商业用途与开发者无关。
